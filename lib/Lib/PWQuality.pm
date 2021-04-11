@@ -301,9 +301,9 @@ sub new ( $class, $opts = {} ) {
     my $self     = bless { 'settings' => $settings }, $class;
 
     foreach my $opt_name ( keys $opts->%* ) {
-        if ( SETTINGS_INT()->{$opt_name} ) {
+        if ( exists SETTINGS_INT()->{$opt_name} ) {
             $self->set_int_value( $opt_name, $opts->{$opt_name} );
-        } elsif ( SETTINGS_STR()->{$opt_name} ) {
+        } elsif ( exists SETTINGS_STR()->{$opt_name} ) {
             $self->set_str_value( $opt_name, $opts->{$opt_name} );
         } else {
             Carp::croak("Option not recognized: '$opt_name'");
@@ -314,9 +314,9 @@ sub new ( $class, $opts = {} ) {
 }
 
 sub set_value ( $self, $key, $value ) {
-    if ( SETTINGS_INT()->{$key} ) {
+    if ( exists SETTINGS_INT()->{$key} ) {
         $self->set_int_value( $key, $value );
-    } elsif ( SETTINGS_STR()->{$key} ) {
+    } elsif ( exists SETTINGS_STR()->{$key} ) {
         $self->set_str_value( $key, $value );
     } else {
         Carp::croak("Option not recognized: '$key'");
@@ -324,9 +324,9 @@ sub set_value ( $self, $key, $value ) {
 }
 
 sub get_value ( $self, $key ) {
-    if ( SETTINGS_INT()->{$key} ) {
+    if ( exists SETTINGS_INT()->{$key} ) {
         $self->get_int_value($key);
-    } elsif ( SETTINGS_STR()->{$key} ) {
+    } elsif ( exists SETTINGS_STR()->{$key} ) {
         $self->get_str_value($key);
     } else {
         Carp::croak("Option not recognized: '$key'");
@@ -353,7 +353,7 @@ __END__
 
 =head1 SYNOPSIS
 
-    my $pwq = Lib::PWQauality->new( 'MIN_LENGTH' => 15 );
+    my $pwq = Lib::PWQauality->new({ 'MIN_LENGTH' => 15 });
 
     # alternatively,
     # my $pwq = Lib::PWQuality->new();
@@ -398,9 +398,9 @@ The following methods are built for an easier, more convenient interface.
 It might not fit strictly within the C<libpwquality> API, but it is built
 on top of that API, providing a more Perlish interface.
 
-=head3 C<new>
+=head3 C<new($opts)>
 
-    my $pwq = Lib::PWQuality->new();
+    my $pwq = Lib::PWQuality->new({...});
 
 Creates a new C<Lib::PWQuality> (C<libpwquality>) object.
 
@@ -478,7 +478,7 @@ what kind of setting it needs to be and calls the right one.
 Accepts parameter keys as specified under C<new>. Returns a string with values
 from L<Lib::PWQuality::Return>.
 
-=head3 C<set_option>
+=head3 C<set_option("$key=$val")>
 
     my $res = $pwq->set_option('minlen=10');
 
@@ -533,7 +533,7 @@ The following options are used:
 
 Returns a string with values from L<Lib::PWQuality::Return>.
 
-=head3 C<settings>
+=head3 C<settings()>
 
     my $settings = $pwq->settings();
     printf "Minimum length: %d\n", $settings->min_length();
@@ -543,7 +543,7 @@ Returns a string with values from L<Lib::PWQuality::Return>.
 
 Returns the L<Lib::PWQuality::Settings> object.
 
-=head3 C<check>
+=head3 C<check(@args)>
 
     # Checks strength of password
     my $res = $pwq->check( $password );
@@ -566,7 +566,7 @@ The C<status> string is a value from L<Lib::PWQuality::Return>.
 The C<score> integer includes the score of the password. If you have
 an error (such as giving two equivalent passwords), the score will be C<-1>.
 
-=head3 C<generate>
+=head3 C<generate($int)>
 
     my $password = $pwq->generate($entropy_bits);
 
@@ -577,7 +577,7 @@ Returns a new password.
 This is a low-level interface which is far closer to the C<libpwquality>
 interface.
 
-=head3 C<get_int_value>
+=head3 C<get_int_value($key)>
 
     my $res = $pwq->get_int_value('MIN_LENGTH');
 
@@ -588,7 +588,7 @@ See available integer values under C<INTEGER VALUES> below.
 
 Alternatively, see C<get_value>.
 
-=head3 C<get_str_value>
+=head3 C<get_str_value($key)>
 
     my $res = $pwq->get_str_value('BAD_WORDS');
 
@@ -599,7 +599,7 @@ See available integer values under C<INTEGER VALUES> below.
 
 Alternatively, see C<get_value>.
 
-=head3 C<set_int_value>
+=head3 C<set_int_value( $key, $val )>
 
     my $res = $pwq->set_int_value( 'MIN_LENGTH' => 20 );
 
@@ -610,7 +610,7 @@ See available integer values under C<INTEGER VALUES> below.
 
 Alternatively, see C<set_value>.
 
-=head3 C<set_str_value>
+=head3 C<set_str_value( $key, $val )>
 
     my $res = $pwq->set_str_value( 'BAD_WORDS', 'foo' );
 
@@ -623,13 +623,54 @@ Alternatively, see C<set_value>.
 
 =head1 BENCHMARKS
 
+Benchmarks using the following modules:
+
+=over 4
+
+=item * L<Lib::PWQuality>
+
+=item * L<App::Genpass>
+
+=item * L<Crypt::GeneratePassword>
+
+=item * L<Crypt::RandPass>
+
+=item * L<Data::Random>
+
+=item * L<String::MkPasswd>
+
+=back
+
 =over 4
 
 =item * Checking password quality
 
 =item * Generating password
 
+Ran 10,000 loops of generating passwords of 13 characters length
+with as many characters as possible.
+
+  App::Genpass (verify):            Rounded run time: 1.14997e+00 +/- 9.5e-04 (0.1%)
+  App::Genpass (noverify):          Rounded run time: 5.2880e-01  +/- 4.5e-04 (0.1%)
+  Data::Random:                     Rounded run time: 2.00317e-01 +/- 8.4e-05 (0.0%)
+  String::MkPasswd:                 Rounded run time: 1.42260e-01 +/- 7.8e-05 (0.1%)
+  Crypt::RandPasswd::chars():       Rounded run time: 7.3406e-02  +/- 5.1e-05 (0.1%)
+  Lib::PWQuality:                   Rounded run time: 7.2583e-02  +/- 7.9e-05 (0.1%)
+  Crypt::GeneratePassword::chars(): Rounded run time: 6.1873e-02  +/- 3.4e-05 (0.1%)
+
+The fastest module of these is L<Crypt::GeneratePassword>. L<Lib::PWQuality> used 15 bits of
+entropy to generate its passwords.
+
 =back
+
+L<Crypt::GeneratePassword> has no non-core dependencies, which is appealing, but not using entropy.
+
+L<Crypt::RandPasswd> has even fewer dependencies than L<Crypt::GeneratePassword> but it is also
+not using any entropy.
+
+L<Lib::PWQuality> has dependencies on L<FFI::Platypus>, L<FFI::C>, L<FFI::CheckLib>, and
+L<libpwquality>. However, it's featureful (including using entropy, having dictionary checks,
+user checks, and quality scoring - its primary usage). It does not depend on any XS modules.
 
 =head1 INTEGER VALUES
 
@@ -684,6 +725,8 @@ Alternatively, see C<set_value>.
 =back
 
 =head1 COVERAGE
+
+No data yet.
 
 =head1 SEE ALSO
 
