@@ -8,7 +8,7 @@ version 0.001
 
 # SYNOPSIS
 
-    my $pwq = Lib::PWQauality->new( 'MIN_LENGTH' => 15 );
+    my $pwq = Lib::PWQauality->new({ 'MIN_LENGTH' => 15 });
 
     # alternatively,
     # my $pwq = Lib::PWQuality->new();
@@ -53,9 +53,9 @@ The following methods are built for an easier, more convenient interface.
 It might not fit strictly within the `libpwquality` API, but it is built
 on top of that API, providing a more Perlish interface.
 
-### `new`
+### `new($opts)`
 
-    my $pwq = Lib::PWQuality->new();
+    my $pwq = Lib::PWQuality->new({...});
 
 Creates a new `Lib::PWQuality` (`libpwquality`) object.
 
@@ -110,7 +110,7 @@ what kind of setting it needs to be and calls the right one.
 Accepts parameter keys as specified under `new`. Returns a string with values
 from [Lib::PWQuality::Return](https://metacpan.org/pod/Lib%3A%3APWQuality%3A%3AReturn).
 
-### `set_option`
+### `set_option("$key=$val")`
 
     my $res = $pwq->set_option('minlen=10');
 
@@ -142,7 +142,7 @@ The following options are used:
 
 Returns a string with values from [Lib::PWQuality::Return](https://metacpan.org/pod/Lib%3A%3APWQuality%3A%3AReturn).
 
-### `settings`
+### `settings()`
 
     my $settings = $pwq->settings();
     printf "Minimum length: %d\n", $settings->min_length();
@@ -152,7 +152,7 @@ Returns a string with values from [Lib::PWQuality::Return](https://metacpan.org/
 
 Returns the [Lib::PWQuality::Settings](https://metacpan.org/pod/Lib%3A%3APWQuality%3A%3ASettings) object.
 
-### `check`
+### `check(@args)`
 
     # Checks strength of password
     my $res = $pwq->check( $password );
@@ -175,7 +175,7 @@ The `status` string is a value from [Lib::PWQuality::Return](https://metacpan.or
 The `score` integer includes the score of the password. If you have
 an error (such as giving two equivalent passwords), the score will be `-1`.
 
-### `generate`
+### `generate($int)`
 
     my $password = $pwq->generate($entropy_bits);
 
@@ -186,7 +186,7 @@ Returns a new password.
 This is a low-level interface which is far closer to the `libpwquality`
 interface.
 
-### `get_int_value`
+### `get_int_value($key)`
 
     my $res = $pwq->get_int_value('MIN_LENGTH');
 
@@ -197,7 +197,7 @@ See available integer values under `INTEGER VALUES` below.
 
 Alternatively, see `get_value`.
 
-### `get_str_value`
+### `get_str_value($key)`
 
     my $res = $pwq->get_str_value('BAD_WORDS');
 
@@ -208,7 +208,7 @@ See available integer values under `INTEGER VALUES` below.
 
 Alternatively, see `get_value`.
 
-### `set_int_value`
+### `set_int_value( $key, $val )`
 
     my $res = $pwq->set_int_value( 'MIN_LENGTH' => 20 );
 
@@ -219,7 +219,7 @@ See available integer values under `INTEGER VALUES` below.
 
 Alternatively, see `set_value`.
 
-### `set_str_value`
+### `set_str_value( $key, $val )`
 
     my $res = $pwq->set_str_value( 'BAD_WORDS', 'foo' );
 
@@ -232,8 +232,40 @@ Alternatively, see `set_value`.
 
 # BENCHMARKS
 
+Benchmarks using the following modules:
+
+- [Lib::PWQuality](https://metacpan.org/pod/Lib%3A%3APWQuality)
+- [App::Genpass](https://metacpan.org/pod/App%3A%3AGenpass)
+- [Crypt::GeneratePassword](https://metacpan.org/pod/Crypt%3A%3AGeneratePassword)
+- [Crypt::RandPass](https://metacpan.org/pod/Crypt%3A%3ARandPass)
+- [Data::Random](https://metacpan.org/pod/Data%3A%3ARandom)
+- [String::MkPasswd](https://metacpan.org/pod/String%3A%3AMkPasswd)
+
 - Checking password quality
 - Generating password
+
+    Ran 10,000 loops of generating passwords of 13 characters length
+    with as many characters as possible.
+
+        App::Genpass (verify):            Rounded run time: 1.14997e+00 +/- 9.5e-04 (0.1%)
+        App::Genpass (noverify):          Rounded run time: 5.2880e-01  +/- 4.5e-04 (0.1%)
+        Data::Random:                     Rounded run time: 2.00317e-01 +/- 8.4e-05 (0.0%)
+        String::MkPasswd:                 Rounded run time: 1.42260e-01 +/- 7.8e-05 (0.1%)
+        Crypt::RandPasswd::chars():       Rounded run time: 7.3406e-02  +/- 5.1e-05 (0.1%)
+        Lib::PWQuality:                   Rounded run time: 7.2583e-02  +/- 7.9e-05 (0.1%)
+        Crypt::GeneratePassword::chars(): Rounded run time: 6.1873e-02  +/- 3.4e-05 (0.1%)
+
+    The fastest module of these is [Crypt::GeneratePassword](https://metacpan.org/pod/Crypt%3A%3AGeneratePassword). [Lib::PWQuality](https://metacpan.org/pod/Lib%3A%3APWQuality) used 15 bits of
+    entropy to generate its passwords.
+
+[Crypt::GeneratePassword](https://metacpan.org/pod/Crypt%3A%3AGeneratePassword) has no non-core dependencies, which is appealing, but not using entropy.
+
+[Crypt::RandPasswd](https://metacpan.org/pod/Crypt%3A%3ARandPasswd) has even fewer dependencies than [Crypt::GeneratePassword](https://metacpan.org/pod/Crypt%3A%3AGeneratePassword) but it is also
+not using any entropy.
+
+[Lib::PWQuality](https://metacpan.org/pod/Lib%3A%3APWQuality) has dependencies on [FFI::Platypus](https://metacpan.org/pod/FFI%3A%3APlatypus), [FFI::C](https://metacpan.org/pod/FFI%3A%3AC), [FFI::CheckLib](https://metacpan.org/pod/FFI%3A%3ACheckLib), and
+[libpwquality](https://metacpan.org/pod/libpwquality). However, it's featureful (including using entropy, having dictionary checks,
+user checks, and quality scoring - its primary usage). It does not depend on any XS modules.
 
 # INTEGER VALUES
 
@@ -262,6 +294,8 @@ Alternatively, see `set_value`.
 - `DICT_PATH`
 
 # COVERAGE
+
+No data yet.
 
 # SEE ALSO
 
