@@ -1,0 +1,79 @@
+# NAME
+
+Lib::PWQuality - Perl interface to the libpwquality C library
+
+# VERSION
+
+version 0.001
+
+# SYNOPSIS
+
+# DESCRIPTION
+
+This module implements an interface to `libpwquality` available
+[here](https://github.com/libpwquality/libpwquality/).
+
+Installing it on Debian and Debian-based distros:
+
+    apt install libpwquality1
+
+I had written it against Debian version 1.4.2-1build1. If you find
+differences, please report via GitHub and I'll do my best to handle it.
+
+If you have use for this and need an [Alien](https://metacpan.org/pod/Alien) module to install the library
+for you as a dependency, let me know.
+
+# METHODS
+
+The following methods are available:
+
+## `new`
+
+## `read_config`
+
+## `set_option`
+
+## `set_int_value`
+
+## `set_str_value`
+
+## `get_int_value`
+
+## `get_str_value`
+
+## `generate`
+
+## `check`
+
+## `settings`
+
+# BENCHMARKS
+
+- Checking password quality
+- Generating password
+
+# COVERAGE
+
+# SEE ALSO
+
+This module uses [FFI::Platypus](https://metacpan.org/pod/FFI%3A%3APlatypus) to connect to the C library and
+[FFI::C](https://metacpan.org/pod/FFI%3A%3AC) to define the object structs.
+
+These modules also provide quality checks for passwords:
+
+- Foo
+
+These modules also generate passwords:
+
+- [App::Genpass](https://metacpan.org/pod/App%3A%3AGenpass)
+
+# AUTHOR
+
+Sawyer X
+
+# COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2021 by Sawyer X.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
