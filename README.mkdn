@@ -44,7 +44,17 @@ Creates a new `Lib::PWQuality` (`libpwquality`) object.
     # Checks strength of new versus old passwords and uses user-data
     my $res = $pwq->check( $new_password, $old_password, $username );
 
-Returns a string with values from [Lib::PWQuality::Return](https://metacpan.org/pod/Lib%3A%3APWQuality%3A%3AReturn).
+Returns a hash reference that includes two fields:
+
+    {
+        'status' => STRING,
+        'score'  => INTEGER,
+    }
+
+The `status` string is a value from [Lib::PWQuality::Return](https://metacpan.org/pod/Lib%3A%3APWQuality%3A%3AReturn).
+
+The `score` integer includes the score of the password. If you have
+an error (such as giving two equivalent passwords), the score will be `-1`.
 
 ## `get_int_value`
 

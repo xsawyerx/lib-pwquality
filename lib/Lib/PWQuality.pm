@@ -260,15 +260,34 @@ $ffi->attach(
     },
 );
 
-# auxerr is last arg
-# XXX: The return can be pwquality_return (if it's negative)
-#      or score (1 - 100)
 $ffi->attach(
     'check',
     # settings, passwod, oldpassword, user, auxerror
     # oldpassword, user, and auxerror can all be NULL
     [ 'pwquality_settings_t', 'string', 'string', 'string', 'opaque*' ],
     'int',
+    sub ( $xsub, $self, @args ) {
+        my $auxerror;
+        if ( @args > 3 ) {
+            Carp::croak('Too many arguments to check()');
+        } elsif ( @args == 3 ) {
+            push @args, \$auxerror;
+        }
+
+        my $result = $xsub->( $self->settings(),@args );
+
+        if ( $result <= 0 ) {
+            return {
+                'status' => $ffi->cast( 'int', 'pwquality_return', $result ),
+                'score'  => -1,
+            };
+        }
+
+        return {
+            'status' => $ffi->cast( 'int', 'pwquality_return', 0 ),
+            'score'  => $result,
+        };
+    },
 );
 
 $ffi->attach(
@@ -370,7 +389,17 @@ Creates a new C<Lib::PWQuality> (C<libpwquality>) object.
     # Checks strength of new versus old passwords and uses user-data
     my $res = $pwq->check( $new_password, $old_password, $username );
 
-Returns a string with values from L<Lib::PWQuality::Return>.
+Returns a hash reference that includes two fields:
+
+    {
+        'status' => STRING,
+        'score'  => INTEGER,
+    }
+
+The C<status> string is a value from L<Lib::PWQuality::Return>.
+
+The C<score> integer includes the score of the password. If you have
+an error (such as giving two equivalent passwords), the score will be C<-1>.
 
 =head2 C<get_int_value>
 
