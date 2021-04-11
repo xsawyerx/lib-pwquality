@@ -35,7 +35,7 @@ is(
 
 is(
     $pwq->set_option('minlen=10'),
-    'PWQ_ERROR_SUCCESS',
+    'SUCCESS',
     'set_option(minlen=10) works',
 );
 
@@ -53,7 +53,7 @@ is(
 
 is(
     $pwq->set_int_value( 'MAX_REPEAT', 1 ),
-    'PWQ_ERROR_SUCCESS',
+    'SUCCESS',
     'set_int_value(MAX_REPEAT,1) works',
 );
 
@@ -71,7 +71,7 @@ is(
 
 is(
     $pwq->set_str_value( 'BAD_WORDS', 'foo' ),
-    'PWQ_ERROR_SUCCESS',
+    'SUCCESS',
     'set_str_value(BAD_WORDS,foo) works',
 );
 

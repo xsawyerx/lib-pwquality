@@ -93,39 +93,39 @@ package Lib::PWQuality::Setting {
     ]);
 }
 
-package Lib::PWQaulity::Error {
+package Lib::PWQaulity::Return {
 
-    FFI::C->enum( 'pwquality_error' => [
-        [ 'PWQ_ERROR_SUCCESS'           =>   0 ],
-        [ 'PWQ_ERROR_FATAL_FAILURE'     =>  -1 ],
-        [ 'PWQ_ERROR_INTEGER'           =>  -2 ],
-        [ 'PWQ_ERROR_CFGFILE_OPEN'      =>  -3 ],
-        [ 'PWQ_ERROR_CFGFILE_MALFORMED' =>  -4 ],
-        [ 'PWQ_ERROR_UNKNOWN_SETTING'   =>  -5 ],
-        [ 'PWQ_ERROR_NON_INT_SETTING'   =>  -6 ],
-        [ 'PWQ_ERROR_NON_STR_SETTING'   =>  -7 ],
-        [ 'PWQ_ERROR_MEM_ALLOC'         =>  -8 ],
-        [ 'PWQ_ERROR_TOO_SIMILAR'       =>  -9 ],
-        [ 'PWQ_ERROR_MIN_DIGITS'        => -10 ],
-        [ 'PWQ_ERROR_MIN_UPPERS'        => -11 ],
-        [ 'PWQ_ERROR_MIN_LOWERS'        => -12 ],
-        [ 'PWQ_ERROR_MIN_OTHERS'        => -13 ],
-        [ 'PWQ_ERROR_MIN_LENGTH'        => -14 ],
-        [ 'PWQ_ERROR_PALINDROME'        => -15 ],
-        [ 'PWQ_ERROR_CASE_CHANGES_ONLY' => -16 ],
-        [ 'PWQ_ERROR_ROTATED'           => -17 ],
-        [ 'PWQ_ERROR_MIN_CLASSES'       => -18 ],
-        [ 'PWQ_ERROR_MAX_CONSECUTIVE'   => -19 ],
-        [ 'PWQ_ERROR_EMPTY_PASSWORD'    => -20 ],
-        [ 'PWQ_ERROR_SAME_PASSWORD'     => -21 ],
-        [ 'PWQ_ERROR_CRACKLIB_CHECK'    => -22 ],
-        [ 'PWQ_ERROR_RNG'               => -23 ],
-        [ 'PWQ_ERROR_GENERATION_FAILED' => -24 ],
-        [ 'PWQ_ERROR_USER_CHECK'        => -25 ],
-        [ 'PWQ_ERROR_GECOS_CHECK'       => -26 ],
-        [ 'PWQ_ERROR_MAX_CLASS_REPEAT'  => -27 ],
-        [ 'PWQ_ERROR_BAD_WORDS'         => -28 ],
-        [ 'PWQ_ERROR_MAX_SEQUENCE'      => -29 ],
+    FFI::C->enum( 'pwquality_return' => [
+        [ 'SUCCESS'           =>   0 ],
+        [ 'FATAL_FAILURE'     =>  -1 ],
+        [ 'INTEGER'           =>  -2 ],
+        [ 'CFGFILE_OPEN'      =>  -3 ],
+        [ 'CFGFILE_MALFORMED' =>  -4 ],
+        [ 'UNKNOWN_SETTING'   =>  -5 ],
+        [ 'NON_INT_SETTING'   =>  -6 ],
+        [ 'NON_STR_SETTING'   =>  -7 ],
+        [ 'MEM_ALLOC'         =>  -8 ],
+        [ 'TOO_SIMILAR'       =>  -9 ],
+        [ 'MIN_DIGITS'        => -10 ],
+        [ 'MIN_UPPERS'        => -11 ],
+        [ 'MIN_LOWERS'        => -12 ],
+        [ 'MIN_OTHERS'        => -13 ],
+        [ 'MIN_LENGTH'        => -14 ],
+        [ 'PALINDROME'        => -15 ],
+        [ 'CASE_CHANGES_ONLY' => -16 ],
+        [ 'ROTATED'           => -17 ],
+        [ 'MIN_CLASSES'       => -18 ],
+        [ 'MAX_CONSECUTIVE'   => -19 ],
+        [ 'EMPTY_PASSWORD'    => -20 ],
+        [ 'SAME_PASSWORD'     => -21 ],
+        [ 'CRACKLIB_CHECK'    => -22 ],
+        [ 'RNG'               => -23 ],
+        [ 'GENERATION_FAILED' => -24 ],
+        [ 'USER_CHECK'        => -25 ],
+        [ 'GECOS_CHECK'       => -26 ],
+        [ 'MAX_CLASS_REPEAT'  => -27 ],
+        [ 'BAD_WORDS'         => -28 ],
+        [ 'MAX_SEQUENCE'      => -29 ],
     ]);
 }
 
@@ -182,16 +182,14 @@ $ffi->attach(
 );
 
 $ffi->attach(
-    'read_config' => [ 'pwquality_settings_t', 'string', 'opaque*' ] => 'pwquality_error',
+    'read_config' => [ 'pwquality_settings_t', 'string', 'opaque*' ] => 'pwquality_return',
     sub ( $xsub, $self, $filename ) {
         return $xsub->( $self->settings(), $filename, undef );
     },
 );
 
-# FIXME: Check results of everything that returns pwquality_error
-
 $ffi->attach(
-    'set_option' => [ 'pwquality_settings_t', 'string' ] => 'pwquality_error',
+    'set_option' => [ 'pwquality_settings_t', 'string' ] => 'pwquality_return',
     sub ( $xsub, $self, $pair ) {
         my ($name) = split /=/xms, $pair;
         exists SETTINGS_ALL()->{$name}
@@ -204,7 +202,7 @@ $ffi->attach(
 $ffi->attach(
     'set_int_value',
     [ 'pwquality_settings_t', 'pwquality_setting', 'int' ],
-    'pwquality_error',
+    'pwquality_return',
     sub ( $xsub, $self, $key, $value ) {
         exists SETTINGS_INT()->{$key}
             or Carp::croak("Unrecognized value: '$key'");
@@ -216,7 +214,7 @@ $ffi->attach(
 $ffi->attach(
     'set_str_value',
     [ 'pwquality_settings_t', 'pwquality_setting', 'string' ],
-    'pwquality_error',
+    'pwquality_return',
     sub ( $xsub, $self, $key, $value ) {
         exists SETTINGS_STR()->{$key}
             or Carp::croak("Unrecognized value: '$key'");
@@ -228,7 +226,7 @@ $ffi->attach(
 $ffi->attach(
     'get_int_value',
     [ 'pwquality_settings_t', 'pwquality_setting', 'int*' ],
-    'pwquality_error',
+    'pwquality_return',
     sub ( $xsub, $self, $key ) {
         exists SETTINGS_INT()->{$key}
             or Carp::croak("Unrecognized value: '$key'");
@@ -242,7 +240,7 @@ $ffi->attach(
 $ffi->attach(
     'get_str_value',
     [ 'pwquality_settings_t', 'pwquality_setting', 'string*' ],
-    'pwquality_error',
+    'pwquality_return',
     sub ( $xsub, $self, $key ) {
         exists SETTINGS_STR()->{$key}
             or Carp::croak("Unrecognized value: '$key'");
@@ -254,16 +252,16 @@ $ffi->attach(
 );
 
 $ffi->attach(
-    'generate' => [ 'pwquality_settings_t', 'int', 'string*' ] => 'pwquality_error',
-    sub ( $xsub, $self, $key ) {
-        my $value;
-        $xsub->( $self->settings(), $key, \$value );
-        return $value;
+    'generate' => [ 'pwquality_settings_t', 'int', 'string*' ] => 'pwquality_return',
+    sub ( $xsub, $self, $entropy_bits ) {
+        my $password;
+        $xsub->( $self->settings(), $entropy_bits, \$password );
+        return $password;
     },
 );
 
 # auxerr is last arg
-# XXX: The return can be pwquality_error (if it's negative)
+# XXX: The return can be pwquality_return (if it's negative)
 #      or score (1 - 100)
 $ffi->attach(
     'check',
@@ -327,21 +325,123 @@ The following methods are available:
 
 =head2 C<new>
 
-=head2 C<read_config>
+    my $pwq = Lib::PWQuality->new();
 
-=head2 C<set_option>
+Creates a new C<Lib::PWQuality> (C<libpwquality>) object.
 
-=head2 C<set_int_value>
+=head2 C<check>
 
-=head2 C<set_str_value>
+    # Checks strength of password
+    my $res = $pwq->check( $password );
+
+    # Checks strength of new versus old passwords
+    my $res = $pwq->check( $new_password, $old_password );
+
+    # Checks strength of new versus old passwords and uses user-data
+    my $res = $pwq->check( $new_password, $old_password, $username );
+
+Returns a string with values from L<Lib::PWQuality::Return>.
 
 =head2 C<get_int_value>
 
+    my $res = $pwq->get_int_value('MIN_LENGTH');
+
+Returns a string with values from L<Lib::PWQuality::Return>.
+
+See available integer values under C<INTEGER VALUES> below.
+
 =head2 C<get_str_value>
+
+    my $res = $pwq->get_str_value('BAD_WORDS');
+
+Returns a string with values from L<Lib::PWQuality::Return>.
+
+See available integer values under C<INTEGER VALUES> below.
 
 =head2 C<generate>
 
-=head2 C<check>
+    my $password = $pwq->generate($entropy_bits);
+
+Returns a new password.
+
+=head2 C<read_config($filename)>
+
+    my $res = $pwq->read_config($filename);
+
+This reads a configuration file.
+
+Returns a string with values from L<Lib::PWQuality::Return>.
+
+=head2 C<set_option>
+
+    my $res = $pwq->set_option('minlen=10');
+
+This sets options using a key=value pair. This particular method uses
+different naming for the options than the one for integer or string values.
+
+The following options are used:
+
+=over 4
+
+=item * C<difok>
+
+=item * C<minlen>
+
+=item * C<dcredit>
+
+=item * C<ucredit>
+
+=item * C<lcredit>
+
+=item * C<ocredit>
+
+=item * C<minclass>
+
+=item * C<maxrepeat>
+
+=item * C<maxclassrepeat>
+
+=item * C<maxsequence>
+
+=item * C<gecoscheck>
+
+=item * C<dictcheck>
+
+=item * C<usercheck>
+
+=item * C<usersubstr>
+
+=item * C<enforcing>
+
+=item * C<badwords>
+
+=item * C<dictpath>
+
+=item * C<retry>
+
+=item * C<enforce_for_root>
+
+=item * C<local_users_only>
+
+=back
+
+Returns a string with values from L<Lib::PWQuality::Return>.
+
+=head2 C<set_int_value>
+
+    my $res = $pwq->set_int_value( 'MIN_LENGTH' => 20 );
+
+Returns a string with values from L<Lib::PWQuality::Return>.
+
+See available integer values under C<INTEGER VALUES> below.
+
+=head2 C<set_str_value>
+
+    my $res = $pwq->set_str_value( 'BAD_WORDS', 'foo' );
+
+Returns a string with values from L<Lib::PWQuality::Return>.
+
+See available integer values under C<INTEGER VALUES> below.
 
 =head2 C<settings>
 
@@ -352,6 +452,58 @@ The following methods are available:
 =item * Checking password quality
 
 =item * Generating password
+
+=back
+
+=head1 INTEGER VALUES
+
+=over 4
+
+=item * C<DIFF_OK>
+
+=item * C<MIN_LENGTH>
+
+=item * C<DIG_CREDIT>
+
+=item * C<UP_CREDIT>
+
+=item * C<LOW_CREDIT>
+
+=item * C<OTH_CREDIT>
+
+=item * C<MIN_CLASS>
+
+=item * C<MAX_REPEAT>
+
+=item * C<MAX_CLASS_REPEAT>
+
+=item * C<MAX_SEQUENCE>
+
+=item * C<GECOS_CHECK>
+
+=item * C<DICT_CHECK>
+
+=item * C<USER_CHECK>
+
+=item * C<USER_SUBSTR>
+
+=item * C<ENFORCING>
+
+=item * C<RETRY_TIMES>
+
+=item * C<ENFORCE_ROOT>
+
+=item * C<LOCAL_USERS>
+
+=back
+
+=head1 STRING VALUES
+
+=over 4
+
+=item * C<BAD_WORDS>
+
+=item * C<DICT_PATH>
 
 =back
 
