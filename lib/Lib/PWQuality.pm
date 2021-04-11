@@ -353,6 +353,28 @@ __END__
 
 =head1 SYNOPSIS
 
+    my $pwq = Lib::PWQauality->new( 'MIN_LENGTH' => 15 );
+
+    # alternatively,
+    # my $pwq = Lib::PWQuality->new();
+    # $pwq->set_value( 'MIN_LENGTH' => 15 );
+    # alternatively, alternatively,
+    # $pwq->set_option('minlen=15');
+
+    # 128 bits of entropy
+    my $new_pass = $pwq->generate(128);
+
+    # compare passwords
+    my $check_result = $pwq->check( $old_pass, $new_pass );
+
+    if ( $check_result->{'status'} > 0 ) {
+        printf "New password score: %d\n",
+               $check_result->{'score'};
+    } else {
+        printf "Failed to create password, error: %s\n",
+               $check_result->{'status'};
+    }
+
 =head1 DESCRIPTION
 
 This module implements an interface to C<libpwquality> available
@@ -370,74 +392,65 @@ for you as a dependency, let me know.
 
 =head1 METHODS
 
-The following methods are available:
+=head2 HIGH-LEVEL INTERFACE
 
-=head2 C<new>
+The following methods are built for an easier, more convenient interface.
+It might not fit strictly within the C<libpwquality> API, but it is built
+on top of that API, providing a more Perlish interface.
+
+=head3 C<new>
 
     my $pwq = Lib::PWQuality->new();
 
 Creates a new C<Lib::PWQuality> (C<libpwquality>) object.
 
-=head2 C<check>
+The types of parameters available:
 
-    # Checks strength of password
-    my $res = $pwq->check( $password );
+=over 4
 
-    # Checks strength of new versus old passwords
-    my $res = $pwq->check( $new_password, $old_password );
+=item * C<DIFF_OK>
 
-    # Checks strength of new versus old passwords and uses user-data
-    my $res = $pwq->check( $new_password, $old_password, $username );
+=item * C<MIN_LENGTH>
 
-Returns a hash reference that includes two fields:
+=item * C<DIG_CREDIT>
 
-    {
-        'status' => STRING,
-        'score'  => INTEGER,
-    }
+=item * C<UP_CREDIT>
 
-The C<status> string is a value from L<Lib::PWQuality::Return>.
+=item * C<LOW_CREDIT>
 
-The C<score> integer includes the score of the password. If you have
-an error (such as giving two equivalent passwords), the score will be C<-1>.
+=item * C<OTH_CREDIT>
 
-=head2 C<get_int_value>
+=item * C<MIN_CLASS>
 
-    my $res = $pwq->get_int_value('MIN_LENGTH');
+=item * C<MAX_REPEAT>
 
-Returns a string with values from L<Lib::PWQuality::Return>.
+=item * C<MAX_CLASS_REPEAT>
 
-See available integer values under C<INTEGER VALUES> below.
+=item * C<MAX_SEQUENCE>
 
-Alternatively, see C<get_value>.
+=item * C<GECOS_CHECK>
 
-=head2 C<get_str_value>
+=item * C<DICT_CHECK>
 
-    my $res = $pwq->get_str_value('BAD_WORDS');
+=item * C<USER_CHECK>
 
-Returns a string with values from L<Lib::PWQuality::Return>.
+=item * C<USER_SUBSTR>
 
-See available integer values under C<INTEGER VALUES> below.
+=item * C<ENFORCING>
 
-Alternatively, see C<get_value>.
+=item * C<RETRY_TIMES>
 
-=head2 C<get_value($key)>
+=item * C<ENFORCE_ROOT>
 
-    my $res = $pwq->get_value('MIN_LENGTH');
+=item * C<LOCAL_USERS>
 
-This method is a simpler form for getting a value. It helps you avoid
-the call to C<get_int_value> and C<get_str_value>. It works by understanding
-what kind of setting it needs to be and calls the right one.
+=item * C<BAD_WORDS>
 
-Returns a string with values from L<Lib::PWQuality::Return>.
+=item * C<DICT_PATH>
 
-=head2 C<generate>
+=back
 
-    my $password = $pwq->generate($entropy_bits);
-
-Returns a new password.
-
-=head2 C<read_config($filename)>
+=head3 C<read_config($filename)>
 
     my $res = $pwq->read_config($filename);
 
@@ -445,17 +458,27 @@ This reads a configuration file.
 
 Returns a string with values from L<Lib::PWQuality::Return>.
 
-=head2 C<set_value( $key, $value )>
+=head3 C<set_value( $key, $value )>
 
     my $res = $pwq->set_value( 'MIN_LENGTH' => 10 );
 
-This method is a simpler form for setting a value. It helps you avoid
-the call to C<set_int_value> and C<set_str_value>. It works by understanding
+This is a high-level version of C<set_int_value> and C<set_str_value>.
+
+Accepts parameter keys as specified under C<new>. Returns a string with values
+from L<Lib::PWQuality::Return>.
+
+=head3 C<get_value($key)>
+
+    my $res = $pwq->get_value('MIN_LENGTH');
+
+This method is a simpler form for getting a value. It helps you avoid
+the call to C<get_int_value> and C<get_str_value>. It works by understanding
 what kind of setting it needs to be and calls the right one.
 
-Returns a string with values from L<Lib::PWQuality::Return>.
+Accepts parameter keys as specified under C<new>. Returns a string with values
+from L<Lib::PWQuality::Return>.
 
-=head2 C<set_option>
+=head3 C<set_option>
 
     my $res = $pwq->set_option('minlen=10');
 
@@ -510,32 +533,93 @@ The following options are used:
 
 Returns a string with values from L<Lib::PWQuality::Return>.
 
-=head2 C<set_int_value>
-
-    my $res = $pwq->set_int_value( 'MIN_LENGTH' => 20 );
-
-Returns a string with values from L<Lib::PWQuality::Return>.
-
-See available integer values under C<INTEGER VALUES> below.
-
-Alternatively, see C<set_value>.
-
-=head2 C<set_str_value>
-
-    my $res = $pwq->set_str_value( 'BAD_WORDS', 'foo' );
-
-Returns a string with values from L<Lib::PWQuality::Return>.
-
-See available integer values under C<INTEGER VALUES> below.
-
-Alternatively, see C<set_value>.
-
-=head2 C<settings>
+=head3 C<settings>
 
     my $settings = $pwq->settings();
     printf "Minimum length: %d\n", $settings->min_length();
 
+    # alternatively,
+    # printf "Minimum length: %d\n", $pwq->get_value('MIN_LENGTH');
+
 Returns the L<Lib::PWQuality::Settings> object.
+
+=head3 C<check>
+
+    # Checks strength of password
+    my $res = $pwq->check( $password );
+
+    # Checks strength of new versus old passwords
+    my $res = $pwq->check( $new_password, $old_password );
+
+    # Checks strength of new versus old passwords and uses user-data
+    my $res = $pwq->check( $new_password, $old_password, $username );
+
+Returns a hash reference that includes two fields:
+
+    {
+        'status' => STRING,
+        'score'  => INTEGER,
+    }
+
+The C<status> string is a value from L<Lib::PWQuality::Return>.
+
+The C<score> integer includes the score of the password. If you have
+an error (such as giving two equivalent passwords), the score will be C<-1>.
+
+=head3 C<generate>
+
+    my $password = $pwq->generate($entropy_bits);
+
+Returns a new password.
+
+=head2 LOW-LEVEL INTERFACE
+
+This is a low-level interface which is far closer to the C<libpwquality>
+interface.
+
+=head3 C<get_int_value>
+
+    my $res = $pwq->get_int_value('MIN_LENGTH');
+
+Accepts parameter keys as specified under C<new>. Returns a string with values
+from L<Lib::PWQuality::Return>.
+
+See available integer values under C<INTEGER VALUES> below.
+
+Alternatively, see C<get_value>.
+
+=head3 C<get_str_value>
+
+    my $res = $pwq->get_str_value('BAD_WORDS');
+
+Accepts parameter keys as specified under C<new>. Returns a string with values
+from L<Lib::PWQuality::Return>.
+
+See available integer values under C<INTEGER VALUES> below.
+
+Alternatively, see C<get_value>.
+
+=head3 C<set_int_value>
+
+    my $res = $pwq->set_int_value( 'MIN_LENGTH' => 20 );
+
+Accepts parameter keys as specified under C<new>. Returns a string with values
+from L<Lib::PWQuality::Return>.
+
+See available integer values under C<INTEGER VALUES> below.
+
+Alternatively, see C<set_value>.
+
+=head3 C<set_str_value>
+
+    my $res = $pwq->set_str_value( 'BAD_WORDS', 'foo' );
+
+Accepts parameter keys as specified under C<new>. Returns a string with values
+from L<Lib::PWQuality::Return>.
+
+See available integer values under C<INTEGER VALUES> below.
+
+Alternatively, see C<set_value>.
 
 =head1 BENCHMARKS
 
