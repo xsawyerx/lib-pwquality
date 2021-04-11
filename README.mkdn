@@ -29,21 +29,100 @@ The following methods are available:
 
 ## `new`
 
-## `read_config`
+    my $pwq = Lib::PWQuality->new();
 
-## `set_option`
+Creates a new `Lib::PWQuality` (`libpwquality`) object.
 
-## `set_int_value`
+## `check`
 
-## `set_str_value`
+    # Checks strength of password
+    my $res = $pwq->check( $password );
+
+    # Checks strength of new versus old passwords
+    my $res = $pwq->check( $new_password, $old_password );
+
+    # Checks strength of new versus old passwords and uses user-data
+    my $res = $pwq->check( $new_password, $old_password, $username );
+
+Returns a string with values from [Lib::PWQuality::Return](https://metacpan.org/pod/Lib%3A%3APWQuality%3A%3AReturn).
 
 ## `get_int_value`
 
+    my $res = $pwq->get_int_value('MIN_LENGTH');
+
+Returns a string with values from [Lib::PWQuality::Return](https://metacpan.org/pod/Lib%3A%3APWQuality%3A%3AReturn).
+
+See available integer values under `INTEGER VALUES` below.
+
 ## `get_str_value`
+
+    my $res = $pwq->get_str_value('BAD_WORDS');
+
+Returns a string with values from [Lib::PWQuality::Return](https://metacpan.org/pod/Lib%3A%3APWQuality%3A%3AReturn).
+
+See available integer values under `INTEGER VALUES` below.
 
 ## `generate`
 
-## `check`
+    my $password = $pwq->generate($entropy_bits);
+
+Returns a new password.
+
+## `read_config($filename)`
+
+    my $res = $pwq->read_config($filename);
+
+This reads a configuration file.
+
+Returns a string with values from [Lib::PWQuality::Return](https://metacpan.org/pod/Lib%3A%3APWQuality%3A%3AReturn).
+
+## `set_option`
+
+    my $res = $pwq->set_option('minlen=10');
+
+This sets options using a key=value pair. This particular method uses
+different naming for the options than the one for integer or string values.
+
+The following options are used:
+
+- `difok`
+- `minlen`
+- `dcredit`
+- `ucredit`
+- `lcredit`
+- `ocredit`
+- `minclass`
+- `maxrepeat`
+- `maxclassrepeat`
+- `maxsequence`
+- `gecoscheck`
+- `dictcheck`
+- `usercheck`
+- `usersubstr`
+- `enforcing`
+- `badwords`
+- `dictpath`
+- `retry`
+- `enforce_for_root`
+- `local_users_only`
+
+Returns a string with values from [Lib::PWQuality::Return](https://metacpan.org/pod/Lib%3A%3APWQuality%3A%3AReturn).
+
+## `set_int_value`
+
+    my $res = $pwq->set_int_value( 'MIN_LENGTH' => 20 );
+
+Returns a string with values from [Lib::PWQuality::Return](https://metacpan.org/pod/Lib%3A%3APWQuality%3A%3AReturn).
+
+See available integer values under `INTEGER VALUES` below.
+
+## `set_str_value`
+
+    my $res = $pwq->set_str_value( 'BAD_WORDS', 'foo' );
+
+Returns a string with values from [Lib::PWQuality::Return](https://metacpan.org/pod/Lib%3A%3APWQuality%3A%3AReturn).
+
+See available integer values under `INTEGER VALUES` below.
 
 ## `settings`
 
@@ -51,6 +130,32 @@ The following methods are available:
 
 - Checking password quality
 - Generating password
+
+# INTEGER VALUES
+
+- `DIFF_OK`
+- `MIN_LENGTH`
+- `DIG_CREDIT`
+- `UP_CREDIT`
+- `LOW_CREDIT`
+- `OTH_CREDIT`
+- `MIN_CLASS`
+- `MAX_REPEAT`
+- `MAX_CLASS_REPEAT`
+- `MAX_SEQUENCE`
+- `GECOS_CHECK`
+- `DICT_CHECK`
+- `USER_CHECK`
+- `USER_SUBSTR`
+- `ENFORCING`
+- `RETRY_TIMES`
+- `ENFORCE_ROOT`
+- `LOCAL_USERS`
+
+# STRING VALUES
+
+- `BAD_WORDS`
+- `DICT_PATH`
 
 # COVERAGE
 
