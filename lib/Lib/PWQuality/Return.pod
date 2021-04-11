@@ -3,11 +3,13 @@
 
 =pod
 
-=head1 RETURN VALUES
+=head1 DESCRIPTION
 
 L<Lib::PWQuality> rarely throws exceptions. Instead, it will return error strings
 that tell you what went wrong (and one when nothing goes wrong) so you handle it
 yourself.
+
+=head1 RETURN VALUES
 
 These are the possible returned strings:
 

@@ -277,11 +277,41 @@ $ffi->attach(
     'string',
 );
 
-# FIXME: mix user opts and default settings
 sub new ( $class, $opts = {} ) {
     my $settings = _default_settings();
     my $self     = bless { 'settings' => $settings }, $class;
+
+    foreach my $opt_name ( keys $opts->%* ) {
+        if ( SETTINGS_INT()->{$opt_name} ) {
+            $self->set_int_value( $opt_name, $opts->{$opt_name} );
+        } elsif ( SETTINGS_STR()->{$opt_name} ) {
+            $self->set_str_value( $opt_name, $opts->{$opt_name} );
+        } else {
+            Carp::croak("Option not recognized: '$opt_name'");
+        }
+    }
+
     return $self;
+}
+
+sub set_value ( $self, $key, $value ) {
+    if ( SETTINGS_INT()->{$key} ) {
+        $self->set_int_value( $key, $value );
+    } elsif ( SETTINGS_STR()->{$key} ) {
+        $self->set_str_value( $key, $value );
+    } else {
+        Carp::croak("Option not recognized: '$key'");
+    }
+}
+
+sub get_value ( $self, $key ) {
+    if ( SETTINGS_INT()->{$key} ) {
+        $self->get_int_value($key);
+    } elsif ( SETTINGS_STR()->{$key} ) {
+        $self->get_str_value($key);
+    } else {
+        Carp::croak("Option not recognized: '$key'");
+    }
 }
 
 sub settings ($self) {
@@ -350,6 +380,8 @@ Returns a string with values from L<Lib::PWQuality::Return>.
 
 See available integer values under C<INTEGER VALUES> below.
 
+Alternatively, see C<get_value>.
+
 =head2 C<get_str_value>
 
     my $res = $pwq->get_str_value('BAD_WORDS');
@@ -357,6 +389,18 @@ See available integer values under C<INTEGER VALUES> below.
 Returns a string with values from L<Lib::PWQuality::Return>.
 
 See available integer values under C<INTEGER VALUES> below.
+
+Alternatively, see C<get_value>.
+
+=head2 C<get_value($key)>
+
+    my $res = $pwq->get_value('MIN_LENGTH');
+
+This method is a simpler form for getting a value. It helps you avoid
+the call to C<get_int_value> and C<get_str_value>. It works by understanding
+what kind of setting it needs to be and calls the right one.
+
+Returns a string with values from L<Lib::PWQuality::Return>.
 
 =head2 C<generate>
 
@@ -369,6 +413,16 @@ Returns a new password.
     my $res = $pwq->read_config($filename);
 
 This reads a configuration file.
+
+Returns a string with values from L<Lib::PWQuality::Return>.
+
+=head2 C<set_value( $key, $value )>
+
+    my $res = $pwq->set_value( 'MIN_LENGTH' => 10 );
+
+This method is a simpler form for setting a value. It helps you avoid
+the call to C<set_int_value> and C<set_str_value>. It works by understanding
+what kind of setting it needs to be and calls the right one.
 
 Returns a string with values from L<Lib::PWQuality::Return>.
 
@@ -435,6 +489,8 @@ Returns a string with values from L<Lib::PWQuality::Return>.
 
 See available integer values under C<INTEGER VALUES> below.
 
+Alternatively, see C<set_value>.
+
 =head2 C<set_str_value>
 
     my $res = $pwq->set_str_value( 'BAD_WORDS', 'foo' );
@@ -443,7 +499,14 @@ Returns a string with values from L<Lib::PWQuality::Return>.
 
 See available integer values under C<INTEGER VALUES> below.
 
+Alternatively, see C<set_value>.
+
 =head2 C<settings>
+
+    my $settings = $pwq->settings();
+    printf "Minimum length: %d\n", $settings->min_length();
+
+Returns the L<Lib::PWQuality::Settings> object.
 
 =head1 BENCHMARKS
 
