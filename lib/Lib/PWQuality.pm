@@ -398,8 +398,7 @@ Installing it on Debian and Debian-based distros:
 I had written it against Debian version 1.4.2-1build1. If you find
 differences, please report via GitHub and I'll do my best to handle it.
 
-If you have use for this and need an L<Alien> module to install the library
-for you as a dependency, let me know.
+You probably already have this installed on your system.
 
 =head1 METHODS
 
