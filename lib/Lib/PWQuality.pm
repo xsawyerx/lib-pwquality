@@ -6,6 +6,7 @@ package Lib::PWQuality;
 use strict;
 use warnings;
 use experimental qw< signatures >;
+use Ref::Util qw< is_ref is_hashref >;
 use FFI::CheckLib 0.06 qw< find_lib_or_die >;
 use FFI::Platypus;
 use FFI::C;
@@ -300,6 +301,14 @@ sub new ( $class, $opts = {} ) {
     my $settings = _default_settings();
     my $self     = bless { 'settings' => $settings }, $class;
 
+    # in case $opts is a configuration filename
+    if ( !is_ref($opts) && length $opts ) {
+        $self->read_config($opts);
+        $opts = {};
+    } elsif ( !is_hashref($opts) ) {
+        Carp::croak("Incorrect argument to new(): $opts");
+    }
+
     foreach my $opt_name ( keys $opts->%* ) {
         if ( exists SETTINGS_INT()->{$opt_name} ) {
             $self->set_int_value( $opt_name, $opts->{$opt_name} );
@@ -360,6 +369,8 @@ __END__
     # $pwq->set_value( 'MIN_LENGTH' => 15 );
     # alternatively, alternatively,
     # $pwq->set_option('minlen=15');
+    # alternatively, alternatively, alternatively,
+    # my $pwq = Lib::PWQuality->new('/path/to/pwquality.conf');
 
     # 128 bits of entropy
     my $new_pass = $pwq->generate(128);
@@ -400,11 +411,15 @@ on top of that API, providing a more Perlish interface.
 
 =head3 C<new($opts)>
 
+    # Create an instance with specific options
     my $pwq = Lib::PWQuality->new({...});
+
+    # Create an instance with a path to a configfile
+    my $pwq = Lib::PWQuality->new('/path/to/pwquality.conf');
 
 Creates a new C<Lib::PWQuality> (C<libpwquality>) object.
 
-The types of parameters available:
+If you are calling it with a hsahref, the following keys are available:
 
 =over 4
 
@@ -621,58 +636,6 @@ See available integer values under C<INTEGER VALUES> below.
 
 Alternatively, see C<set_value>.
 
-=head1 BENCHMARKS
-
-Benchmarks using the following modules:
-
-=over 4
-
-=item * L<Lib::PWQuality>
-
-=item * L<App::Genpass>
-
-=item * L<Crypt::GeneratePassword>
-
-=item * L<Crypt::RandPass>
-
-=item * L<Data::Random>
-
-=item * L<String::MkPasswd>
-
-=back
-
-=over 4
-
-=item * Checking password quality
-
-=item * Generating password
-
-Ran 10,000 loops of generating passwords of 13 characters length
-with as many characters as possible.
-
-  App::Genpass (verify):            Rounded run time: 1.14997e+00 +/- 9.5e-04 (0.1%)
-  App::Genpass (noverify):          Rounded run time: 5.2880e-01  +/- 4.5e-04 (0.1%)
-  Data::Random:                     Rounded run time: 2.00317e-01 +/- 8.4e-05 (0.0%)
-  String::MkPasswd:                 Rounded run time: 1.42260e-01 +/- 7.8e-05 (0.1%)
-  Crypt::RandPasswd::chars():       Rounded run time: 7.3406e-02  +/- 5.1e-05 (0.1%)
-  Lib::PWQuality:                   Rounded run time: 7.2583e-02  +/- 7.9e-05 (0.1%)
-  Crypt::GeneratePassword::chars(): Rounded run time: 6.1873e-02  +/- 3.4e-05 (0.1%)
-
-The fastest module of these is L<Crypt::GeneratePassword>. L<Lib::PWQuality> used 15 bits of
-entropy to generate its passwords.
-
-=back
-
-L<Crypt::GeneratePassword> has no non-core dependencies, which is appealing, but not using entropy.
-
-L<Crypt::RandPasswd> has even fewer dependencies than L<Crypt::GeneratePassword> but it is also
-not using any entropy.
-
-L<Lib::PWQuality> has dependencies on L<FFI::Platypus>, L<FFI::C>, L<FFI::CheckLib>, and
-C<libpwquality>. C<libpwquality> also depends on C<cracklib>. However, it's featureful
-(including using entropy, having dictionary checks, user checks, and quality
-scoring - its primary usage). It does not depend on any XS modules.
-
 =head1 INTEGER VALUES
 
 =over 4
@@ -725,27 +688,68 @@ scoring - its primary usage). It does not depend on any XS modules.
 
 =back
 
-=head1 COVERAGE
+=head1 BENCHMARKS
 
-No data yet.
+It's important to take into account that C<libpwquality> is more thorough than most
+password generators and password quality checkers. It is meant for user management
+quality level.
 
-=head1 SEE ALSO
-
-This module uses L<FFI::Platypus> to connect to the C library and
-L<FFI::C> to define the object structs.
-
-These modules also provide quality checks for passwords:
+However, I decided to still benchmark against the following modules:
 
 =over 4
 
-=item * Foo
+=item * L<Lib::PWQuality>
+
+=item * L<App::Genpass>
+
+=item * L<Crypt::GeneratePassword>
+
+=item * L<Crypt::RandPass>
+
+=item * L<Data::Random>
+
+=item * L<String::MkPasswd>
 
 =back
 
-These modules also generate passwords:
+Ran 10,000 loops of generating passwords of 13 characters length
+with as many characters as possible.
+
+  App::Genpass (verify):            Rounded run time: 1.14997e+00 +/- 9.5e-04 (0.1%)
+  App::Genpass (noverify):          Rounded run time: 5.2880e-01  +/- 4.5e-04 (0.1%)
+  Data::Random:                     Rounded run time: 2.00317e-01 +/- 8.4e-05 (0.0%)
+  String::MkPasswd:                 Rounded run time: 1.42260e-01 +/- 7.8e-05 (0.1%)
+  Crypt::RandPasswd::chars():       Rounded run time: 7.3406e-02  +/- 5.1e-05 (0.1%)
+  Lib::PWQuality:                   Rounded run time: 7.2583e-02  +/- 7.9e-05 (0.1%)
+  Crypt::GeneratePassword::chars(): Rounded run time: 6.1873e-02  +/- 3.4e-05 (0.1%)
+
+The fastest module of these is L<Crypt::GeneratePassword>. It is also has no non-core
+dependencies. Keep into account that it is not as secure and does not use entropy.
+
+L<Lib::PWQuality> has a few dependencies, including C<libpwquality>. If you're on
+GNU/Linux, there's a good chance that C<libpwquality> is already installed. It's
+featureful (including using entropy, having dictionary checks, user checks, and
+quality scoring - its primary usage). It does not depend on any XS modules.
+
+=head1 TEST COVERAGE
+
+I'll increase these over time.
+
+  ---------------- ------ ------ ------ ------ ------ ------ ------
+  File               stmt   bran   cond    sub    pod   time  total
+  ---------------- ------ ------ ------ ------ ------ ------ ------
+  Lib/PWQuality.pm   81.3   21.4   50.0   93.7  100.0  100.0   74.7
+  Total              81.3   21.4   50.0   93.7  100.0  100.0   74.7
+  ---------------- ------ ------ ------ ------ ------ ------ ------
+
+=head1 SEE ALSO
 
 =over 4
 
-=item * L<App::Genpass>
+=item * L<FFI::Platypus>
+
+=item * L<FFI::CheckLib>
+
+=item * L<FFI::C>
 
 =back

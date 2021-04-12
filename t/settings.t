@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More 'tests' => 16;
+use Test::More 'tests' => 22;
 use Test::Fatal qw< exception >;
 use Lib::PWQuality;
 
@@ -81,6 +81,43 @@ is(
     'BAD_WORDS set to foo',
 );
 
+is(
+    $pwq->settings->bad_words(),
+    'foo',
+    'bad_words setting is now foo',
+);
+
+{
+    my $settings  = $pwq->settings();
+    my $bad_words = $settings->{'bad_words'};
+
+    is(
+        $settings->{'bad_words'},
+        'foo',
+        'bad_words attribute set',
+    );
+
+    $settings->{'bad_words'} = 'bar';
+    is(
+        $settings->bad_words(),
+        'bar',
+        'bad_words attribute retrieval works',
+    );
+
+    my $dict_path = $settings->{'dict_path'};
+    is( $dict_path, undef, 'Undefined dict_path attribute' );
+
+    $pwq->set_value( 'DICT_PATH' => '/path' );
+
+    my $path = $settings->dict_path();
+    ok( exists $settings->{'dict_path'}, 'dict_path attribute created' );
+    is(
+        $settings->{'dict_path'},
+        '/path',
+        "dict_path attribute correct value: $path",
+    );
+}
+
 like(
     exception( sub { $pwq->set_option('foo=bar') } ),
     qr/^\QUnrecognized option: 'foo'\E/xms,
@@ -110,3 +147,4 @@ like(
     qr/^\QUnrecognized value: 'foo'\E/xms,
     'Cannot get_str_value to non-supported key',
 );
+
