@@ -264,8 +264,9 @@ Benchmarks using the following modules:
 not using any entropy.
 
 [Lib::PWQuality](https://metacpan.org/pod/Lib%3A%3APWQuality) has dependencies on [FFI::Platypus](https://metacpan.org/pod/FFI%3A%3APlatypus), [FFI::C](https://metacpan.org/pod/FFI%3A%3AC), [FFI::CheckLib](https://metacpan.org/pod/FFI%3A%3ACheckLib), and
-[libpwquality](https://metacpan.org/pod/libpwquality). However, it's featureful (including using entropy, having dictionary checks,
-user checks, and quality scoring - its primary usage). It does not depend on any XS modules.
+`libpwquality`. `libpwquality` also depends on `cracklib`. However, it's featureful
+(including using entropy, having dictionary checks, user checks, and quality
+scoring - its primary usage). It does not depend on any XS modules.
 
 # INTEGER VALUES
 

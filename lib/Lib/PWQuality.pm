@@ -669,8 +669,9 @@ L<Crypt::RandPasswd> has even fewer dependencies than L<Crypt::GeneratePassword>
 not using any entropy.
 
 L<Lib::PWQuality> has dependencies on L<FFI::Platypus>, L<FFI::C>, L<FFI::CheckLib>, and
-L<libpwquality>. However, it's featureful (including using entropy, having dictionary checks,
-user checks, and quality scoring - its primary usage). It does not depend on any XS modules.
+C<libpwquality>. C<libpwquality> also depends on C<cracklib>. However, it's featureful
+(including using entropy, having dictionary checks, user checks, and quality
+scoring - its primary usage). It does not depend on any XS modules.
 
 =head1 INTEGER VALUES
 
