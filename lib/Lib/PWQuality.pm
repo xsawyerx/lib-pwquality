@@ -131,6 +131,7 @@ package Lib::PWQaulity::Return {
 }
 
 package Lib::PWQuality::Settings {
+
     use experimental qw< signatures >;
 
     FFI::C->struct( 'pwquality_settings_t' => [
